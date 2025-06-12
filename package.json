@@ -1,0 +1,23 @@
+{
+  "name": "terrain-gen",
+  "version": "1.0.0",
+  "description": "Terrain Generation for DnD World Building",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx tsc && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rileylum/terrain-gen.git"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/rileylum/terrain-gen/issues"
+  },
+  "homepage": "https://github.com/rileylum/terrain-gen#readme",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
