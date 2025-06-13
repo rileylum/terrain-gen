@@ -8,4 +8,4 @@ const imageBuffer = createPerlinNoise(imageSize, scaleFactor);
 
 sharp(imageBuffer, { raw: {width: imageSize, height: imageSize, channels: 1 } })
   .png()
-  .toFile('noise.png');
+  .toFile('dist/noise.png');
