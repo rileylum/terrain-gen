@@ -19,5 +19,9 @@
   "homepage": "https://github.com/rileylum/terrain-gen#readme",
   "devDependencies": {
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@types/sharp": "^0.31.1",
+    "sharp": "^0.34.2"
   }
 }
