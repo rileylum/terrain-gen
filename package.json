@@ -12,12 +12,16 @@
     "url": "git+https://github.com/rileylum/terrain-gen.git"
   },
   "author": "",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/rileylum/terrain-gen/issues"
   },
   "homepage": "https://github.com/rileylum/terrain-gen#readme",
   "devDependencies": {
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@types/sharp": "^0.31.1",
+    "sharp": "^0.34.2"
   }
 }
