@@ -6,6 +6,8 @@ const scaleFactor = 0.1;
 
 const imageBuffer = createPerlinNoise(imageSize, scaleFactor);
 
-sharp(imageBuffer, { raw: {width: imageSize, height: imageSize, channels: 1 } })
+sharp(imageBuffer, {
+  raw: { width: imageSize, height: imageSize, channels: 1 },
+})
   .png()
   .toFile('dist/noise.png');
