@@ -1,12 +1,12 @@
 import {Coordinate, ImageSize, NoiseValue, PixelValue, ScaleFactor, GridSize, InterpolationFactor, GradientVector, GradientVectorGrid, NoiseArray, ImageBuffer} from './types';
 
-function CreateVector(randomNumber: number): GradientVector {
+function createVector(randomNumber: number): GradientVector {
  return {x: Math.cos(randomNumber), y: Math.sin(randomNumber)};
 }
 
 function createVectorGrid(gridSize: GridSize): GradientVectorGrid {
   return Array.from({length: gridSize}, () => Array.from({length: gridSize}, () => {
-    return CreateVector(Math.random() * 2 * Math.PI)
+    return createVector(Math.random() * 2 * Math.PI)
   }));
 } 
 
