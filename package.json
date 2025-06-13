@@ -7,6 +7,7 @@
     "start": "npx tsc && node dist/index.js",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepare": "husky",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,11 +22,19 @@
   "homepage": "https://github.com/rileylum/terrain-gen#readme",
   "devDependencies": {
     "@types/node": "^24.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "@types/sharp": "^0.31.1",
     "sharp": "^0.34.2"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
