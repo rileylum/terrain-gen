@@ -1,10 +1,11 @@
-// Perlin Noise Generation
-// Step 1 - Generate a 2d grid of random gradient vectors
-// Step 2 - Compute dot product between vectors and offset
-// Step 3 - Interpolate these values
+import sharp from 'sharp';
+import { createPerlinNoise } from './perlin';
 
-function createGrid(n: number) {
-  console.log("GRID")
-} 
+const imageSize = 256;
+const scaleFactor = 0.1;
 
-createGrid(3)
+const imageBuffer = createPerlinNoise(imageSize, scaleFactor);
+
+sharp(imageBuffer, { raw: {width: imageSize, height: imageSize, channels: 1 } })
+  .png()
+  .toFile('noise.png');
