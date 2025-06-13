@@ -12,11 +12,11 @@ import {
   ImageBuffer,
 } from './types';
 
-function createVector(randomNumber: number): GradientVector {
+export function createVector(randomNumber: number): GradientVector {
   return { x: Math.cos(randomNumber), y: Math.sin(randomNumber) };
 }
 
-function createVectorGrid(gridSize: GridSize): GradientVectorGrid {
+export function createVectorGrid(gridSize: GridSize): GradientVectorGrid {
   return Array.from({ length: gridSize }, () =>
     Array.from({ length: gridSize }, () => {
       return createVector(Math.random() * 2 * Math.PI);
@@ -25,7 +25,7 @@ function createVectorGrid(gridSize: GridSize): GradientVectorGrid {
 }
 
 // Linear Interpolation
-function lerp(
+export function lerp(
   a: NoiseValue,
   b: NoiseValue,
   t: InterpolationFactor
@@ -33,11 +33,11 @@ function lerp(
   return a + t * (b - a);
 }
 
-function smoothStep(t: InterpolationFactor): InterpolationFactor {
+export function smoothStep(t: InterpolationFactor): InterpolationFactor {
   return 3 * t * t - 2 * t * t * t;
 }
 
-function sampleNoise(
+export function sampleNoise(
   coordinate: Coordinate,
   vectorGrid: GradientVectorGrid
 ): NoiseValue {
@@ -66,7 +66,7 @@ function sampleNoise(
   return lerp(topValue, bottomValue, smoothY);
 }
 
-function createNoiseArray(
+export function createNoiseArray(
   size: ImageSize,
   scale: ScaleFactor,
   vectorGrid: GradientVectorGrid
@@ -78,14 +78,14 @@ function createNoiseArray(
   );
 }
 
-function noiseToPixel(noiseValue: NoiseValue): PixelValue {
+export function noiseToPixel(noiseValue: NoiseValue): PixelValue {
   // noiseValue ranges between -1 and 1.
   // add 1 to make values always positive
   // values are te 0 to 2, times 127.5 gets to 0 and 255
   return Math.floor((noiseValue + 1) * 127.5);
 }
 
-function createImageBuffer(
+export function createImageBuffer(
   imageSize: ImageSize,
   noiseArray: NoiseArray
 ): ImageBuffer {
