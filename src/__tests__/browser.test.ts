@@ -119,6 +119,37 @@ describe('Browser Module', () => {
         initializeTerrainGenerator();
       }).not.toThrow();
     });
+
+    it('should handle missing range inputs gracefully', () => {
+      // Remove one of the range inputs
+      document.body.innerHTML = `
+        <canvas id="terrain-canvas" width="400" height="400"></canvas>
+        <form id="image_creation_form">
+          <input type="range" id="image_size_range" name="image_size_range" value="8" min="6" max="10">
+          <!-- Missing image_size_display and scale_factor_range -->
+        </form>
+      `;
+
+      expect(() => {
+        initializeTerrainGenerator();
+      }).not.toThrow();
+    });
+
+    it('should handle missing output elements gracefully', () => {
+      // Remove output elements
+      document.body.innerHTML = `
+        <canvas id="terrain-canvas" width="400" height="400"></canvas>
+        <form id="image_creation_form">
+          <input type="range" id="image_size_range" name="image_size_range" value="8" min="6" max="10">
+          <input type="range" id="scale_factor_range" name="scale_factor_range" value="0.05" min="0.01" max="0.3">
+          <!-- Missing output elements -->
+        </form>
+      `;
+
+      expect(() => {
+        initializeTerrainGenerator();
+      }).not.toThrow();
+    });
   });
 
   describe('Form submission', () => {
@@ -209,6 +240,20 @@ describe('Browser Module', () => {
 
       expect(() => {
         form.dispatchEvent(submitEvent);
+      }).not.toThrow();
+    });
+  });
+
+  describe('Event listener setup', () => {
+    it('should handle missing form element gracefully', () => {
+      // Remove form element
+      document.body.innerHTML = `
+        <canvas id="terrain-canvas" width="400" height="400"></canvas>
+        <!-- No form element -->
+      `;
+
+      expect(() => {
+        document.dispatchEvent(new Event('DOMContentLoaded'));
       }).not.toThrow();
     });
   });
