@@ -18,12 +18,8 @@ The result is organic, flowing patterns perfect for terrain generation rather th
 
 - ✅ **Interactive Web Interface** - Real-time terrain generation in browser
 - ✅ **Pure TypeScript Perlin noise implementation** - Built from scratch for learning
-- ✅ **Responsive Design** - Works on desktop and mobile devices
-- ✅ **Live Parameter Controls** - Adjust image size (64-1024px) and scale factor (0.01-0.3)
 - ✅ **Canvas Rendering** - Real-time visualization with dynamic sizing
 - ✅ **Command Line Tool** - PNG export for offline use
-- ✅ **Comprehensive Test Suite** - 96%+ code coverage with robust error handling
-- ✅ **Modern Development Setup** - TypeScript, Jest, Prettier, Husky pre-commit hooks
 
 ## Installation
 
@@ -165,8 +161,6 @@ terrain-gen/
 ### Phase 1: User Interface ✅ **COMPLETED**
 - [x] **Web Frontend** - Browser-based terrain generator
 - [x] **Parameter Controls** - Sliders and inputs for all generation settings
-- [x] **Real-time Generation** - Instant terrain updates with canvas rendering
-- [x] **Responsive Design** - Mobile and desktop compatibility
 
 ### Phase 2: Enhanced Noise Generation
 - [ ] **Octave Layering** - Combine multiple noise layers for realistic terrain
@@ -197,15 +191,6 @@ terrain-gen/
 
 
 ## Development Workflow
-
-This project follows modern development practices:
-
-### Code Quality
-- **TypeScript**: Full type safety with strict compilation
-- **Testing**: Comprehensive test suite with 96%+ coverage
-- **Formatting**: Automated code formatting with Prettier
-- **Git Hooks**: Pre-commit checks for formatting and tests
-- **ES Modules**: Modern JavaScript module system
 
 ### Testing
 ```bash
