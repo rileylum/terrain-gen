@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Terrain Generator for D&D campaigns using
+  Perlin noise"
+    />
+    <meta name="author" content="Riley Lum" />
+    <title>Terrain Generator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Perlin Noise</h1>
+      <p>
+        Generate natural-looking terrain patterns using
+        <a href="https://en.wikipedia.org/wiki/Perlin_noise" target="_blank" rel="noopener noreferrer"
+          >Perlin noise algorithm</a
+        >. Adjust the settings below to create smooth, organic textures for maps, landscapes, and procedural content.
+      </p>
+    </header>
+    <main>
+      <section>
+        <figure>
+          <canvas class="perlinImg" width="400" height="400" id="terrain-canvas">
+            Placeholder until image is generated
+          </canvas>
+        </figure>
+        <form role="form" id="image_creation_form">
+          <fieldset>
+            <legend>Image Settings</legend>
+
+            <div class="form-group">
+              <label for="image_size_range"
+                >Image Size:
+                <output for="image_size_range" name="image_size_display" id="image_size_display">256</output></label
+              >
+              <input
+                type="range"
+                min="6"
+                max="10"
+                step="1"
+                value="8"
+                name="image_size_range"
+                id="image_size_range"
+                aria-describedby="image_size_display"
+              />
+              <small>Resolution of the generated image in pixels</small>
+            </div>
+
+            <div class="form-group">
+              <label for="scale_factor_range"
+                >Scale Factor:
+                <output for="scale_factor_range" name="scale_factor_display" id="scale_factor_display"
+                  >0.05</output
+                ></label
+              >
+              <input
+                type="range"
+                min="0.01"
+                max="0.3"
+                step="0.01"
+                value="0.05"
+                name="scale_factor_range"
+                id="scale_factor_range"
+                aria-describedby="scale_factor_display"
+              />
+              <small>Controls zoom level - lower values create smoother, larger patterns</small>
+            </div>
+
+            <button type="submit">Generate Image</button>
+          </fieldset>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/dist/browser.js"></script>
+  </body>
+</html>
