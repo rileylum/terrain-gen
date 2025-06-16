@@ -2,9 +2,14 @@
  * @jest-environment jsdom
  */
 import { initializeTerrainGenerator } from '../browser';
-// Mock the perlin module
-jest.mock('../perlin', () => ({
-    createPerlinNoise: jest
+// Mock the fractal and image modules
+jest.mock('../fractal', () => ({
+    createFractalNoise: jest
+        .fn()
+        .mockReturnValue([[0, 0.5], [-0.5, 1]]),
+}));
+jest.mock('../image', () => ({
+    createImageBuffer: jest
         .fn()
         .mockReturnValue(new Uint8Array([128, 64, 192, 255])),
 }));
@@ -35,6 +40,8 @@ beforeEach(() => {
       <output id="image_size_display">256</output>
       <input type="range" id="scale_factor_range" name="scale_factor_range" value="0.05" min="0.01" max="0.3">
       <output id="scale_factor_display">0.05</output>
+      <input type="range" id="octave_count_range" name="octave_count_range" value="4" min="1" max="6">
+      <output id="octave_count_display">4</output>
     </form>
   `;
     // Mock canvas getContext
@@ -105,7 +112,24 @@ describe('Browser Module', () => {
         <form id="image_creation_form">
           <input type="range" id="image_size_range" name="image_size_range" value="8" min="6" max="10">
           <input type="range" id="scale_factor_range" name="scale_factor_range" value="0.05" min="0.01" max="0.3">
+          <input type="range" id="octave_count_range" name="octave_count_range" value="4" min="1" max="6">
           <!-- Missing output elements -->
+        </form>
+      `;
+            expect(() => {
+                initializeTerrainGenerator();
+            }).not.toThrow();
+        });
+        it('should handle missing octave count input gracefully', () => {
+            // Remove octave count elements
+            document.body.innerHTML = `
+        <canvas id="terrain-canvas" width="400" height="400"></canvas>
+        <form id="image_creation_form">
+          <input type="range" id="image_size_range" name="image_size_range" value="8" min="6" max="10">
+          <output id="image_size_display">256</output>
+          <input type="range" id="scale_factor_range" name="scale_factor_range" value="0.05" min="0.01" max="0.3">
+          <output id="scale_factor_display">0.05</output>
+          <!-- Missing octave count elements -->
         </form>
       `;
             expect(() => {

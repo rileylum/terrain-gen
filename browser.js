@@ -1,4 +1,5 @@
-import { createPerlinNoise } from './perlin.js';
+import { createFractalNoise } from './fractal.js';
+import { createImageBuffer } from './image.js';
 // Draw placeholder on canvas
 function drawPlaceholder() {
     const canvas = document.getElementById('terrain-canvas');
@@ -24,6 +25,8 @@ function setupRangeInputs() {
     const imageSizeDisplay = document.getElementById('image_size_display');
     const scaleFactorRange = document.getElementById('scale_factor_range');
     const scaleFactorDisplay = document.getElementById('scale_factor_display');
+    const octaveCountRange = document.getElementById('octave_count_range');
+    const octaveCountDisplay = document.getElementById('octave_count_display');
     if (imageSizeRange && imageSizeDisplay) {
         imageSizeRange.addEventListener('input', () => {
             imageSizeDisplay.value = Math.pow(2, parseInt(imageSizeRange.value)).toString();
@@ -32,6 +35,11 @@ function setupRangeInputs() {
     if (scaleFactorRange && scaleFactorDisplay) {
         scaleFactorRange.addEventListener('input', () => {
             scaleFactorDisplay.value = parseFloat(scaleFactorRange.value).toFixed(2);
+        });
+    }
+    if (octaveCountRange && octaveCountDisplay) {
+        octaveCountRange.addEventListener('input', () => {
+            octaveCountDisplay.value = octaveCountRange.value;
         });
     }
 }
@@ -69,9 +77,12 @@ function handleFormSubmit(evt) {
     const formData = new FormData(evt.target);
     const imageSize = formData.get('image_size_range');
     const scaleFactor = formData.get('scale_factor_range');
+    const octaveCount = formData.get('octave_count_range');
     const imageSizeValue = Math.pow(2, parseInt(imageSize));
     const scaleFactorValue = parseFloat(scaleFactor);
-    const imageBuffer = createPerlinNoise(imageSizeValue, scaleFactorValue);
+    const octaveCountValue = parseInt(octaveCount);
+    const noiseArray = createFractalNoise(octaveCountValue, imageSizeValue, scaleFactorValue);
+    const imageBuffer = createImageBuffer(imageSizeValue, noiseArray);
     renderToCanvas(imageBuffer, imageSizeValue);
 }
 // Initialize when DOM is ready

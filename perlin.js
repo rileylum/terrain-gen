@@ -41,26 +41,10 @@ export function sampleNoise(coordinate, vectorGrid) {
 export function createNoiseArray(size, scale, vectorGrid) {
     return Array.from({ length: size }, (_, y) => Array.from({ length: size }, (_, x) => sampleNoise({ x: x * scale, y: y * scale }, vectorGrid)));
 }
-export function noiseToPixel(noiseValue) {
-    // noiseValue ranges between -1 and 1.
-    // add 1 to make values always positive
-    // values are te 0 to 2, times 127.5 gets to 0 and 255
-    return Math.floor((noiseValue + 1) * 127.5);
-}
-export function createImageBuffer(imageSize, noiseArray) {
-    const imageBuffer = new Uint8Array(Math.pow(imageSize, 2));
-    for (let y = 0; y < imageSize; y++) {
-        for (let x = 0; x < imageSize; x++) {
-            imageBuffer[y * imageSize + x] = noiseToPixel(noiseArray[y][x]);
-        }
-    }
-    return imageBuffer;
-}
 export function createPerlinNoise(imageSize, scaleFactor) {
     const gridSize = Math.ceil(imageSize * scaleFactor) + 2;
     const vectorGrid = createVectorGrid(gridSize);
     const noiseArray = createNoiseArray(imageSize, scaleFactor, vectorGrid);
-    const imageBuffer = createImageBuffer(imageSize, noiseArray);
-    return imageBuffer;
+    return noiseArray;
 }
 //# sourceMappingURL=perlin.js.map
