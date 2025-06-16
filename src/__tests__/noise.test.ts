@@ -1,4 +1,5 @@
 import { createPerlinNoise } from '../perlin';
+import { createFractalNoise } from '../fractal';
 import {
   Coordinate,
   ImageSize,
@@ -21,8 +22,6 @@ import {
   smoothStep,
   sampleNoise,
   createNoiseArray,
-  noiseToPixel,
-  createImageBuffer,
 } from '../perlin';
 
 // Helper function for variance calculation
@@ -32,7 +31,7 @@ function calculateVariance(values: number[]): number {
   return squaredDiffs.reduce((a, b) => a + b, 0) / values.length;
 }
 
-describe('Perlin Noise Generator', () => {
+describe('Noise Generation', () => {
   describe('createVector', () => {
     it('should create unit vectors', () => {
       const vector = createVector(0);
@@ -199,64 +198,14 @@ describe('Perlin Noise Generator', () => {
     });
   });
 
-  describe('noiseToPixel', () => {
-    it('should convert noise range to pixel range', () => {
-      expect(noiseToPixel(-1)).toBe(0);
-      expect(noiseToPixel(1)).toBe(255);
-      expect(noiseToPixel(0)).toBe(127);
-    });
-
-    it('should handle edge cases', () => {
-      expect(noiseToPixel(-1.5)).toBe(-64); // Math.floor((-1.5 + 1) * 127.5) = -64
-      expect(noiseToPixel(1.5)).toBe(318); // Math.floor((1.5 + 1) * 127.5) = 318
-    });
-
-    it('should handle typical Perlin noise range', () => {
-      // Test values within typical Perlin range
-      expect(noiseToPixel(-0.8)).toBe(25); // Math.floor((-0.8 + 1) * 127.5) = 25
-      expect(noiseToPixel(0.3)).toBe(165); // Math.floor((0.3 + 1) * 127.5) = 165
-      expect(noiseToPixel(-0.2)).toBe(102); // Math.floor((-0.2 + 1) * 127.5) = 102
-    });
-  });
-
-  describe('createImageBuffer', () => {
-    it('should create buffer with correct size', () => {
-      const noiseArray = [
-        [0, 0.5],
-        [-0.5, 1],
-      ];
-      const buffer = createImageBuffer(2, noiseArray);
-
-      expect(buffer).toBeInstanceOf(Uint8Array);
-      expect(buffer).toHaveLength(4);
-    });
-
-    it('should convert noise values to pixels correctly', () => {
-      const noiseArray = [[-1], [1]]; // 2x1 array for imageSize=1, but 2 rows
-      const buffer = createImageBuffer(1, noiseArray);
-
-      expect(buffer[0]).toBe(0); // -1 -> 0
-
-      // Test a proper 2x2 case
-      const noiseArray2x2 = [
-        [-1, 0],
-        [0.5, 1],
-      ];
-      const buffer2x2 = createImageBuffer(2, noiseArray2x2);
-
-      expect(buffer2x2[0]).toBe(0); // -1 -> 0
-      expect(buffer2x2[1]).toBe(127); // 0 -> 127
-      expect(buffer2x2[2]).toBe(191); // 0.5 -> 191
-      expect(buffer2x2[3]).toBe(255); // 1 -> 255
-    });
-  });
 
   describe('createPerlinNoise (integration)', () => {
-    it('should generate valid image buffer', () => {
-      const buffer = createPerlinNoise(16, 0.1);
+    it('should generate valid noise array', () => {
+      const noiseArray = createPerlinNoise(16, 0.1);
 
-      expect(buffer).toBeInstanceOf(Uint8Array);
-      expect(buffer).toHaveLength(256); // 16 * 16
+      expect(Array.isArray(noiseArray)).toBe(true);
+      expect(noiseArray).toHaveLength(16);
+      expect(noiseArray[0]).toHaveLength(16);
     });
 
     it('should properly size gradient grid for safe sampling', () => {
@@ -286,12 +235,16 @@ describe('Perlin Noise Generator', () => {
       const buffer2 = createPerlinNoise(4, 0.5);
 
       // With different scales, the patterns should be measurably different
+      // Flatten arrays for variance calculation
+      const flat1 = buffer1.flat();
+      const flat2 = buffer2.flat();
+      
       // Calculate variance to ensure different noise characteristics
-      const variance1 = calculateVariance(Array.from(buffer1));
-      const variance2 = calculateVariance(Array.from(buffer2));
+      const variance1 = calculateVariance(flat1);
+      const variance2 = calculateVariance(flat2);
 
       // Different scales should produce different statistical properties
-      expect(Math.abs(variance1 - variance2)).toBeGreaterThan(10);
+      expect(Math.abs(variance1 - variance2)).toBeGreaterThan(0.005);
     });
 
     it('should produce consistent results for same parameters', () => {
@@ -300,17 +253,91 @@ describe('Perlin Noise Generator', () => {
 
       // Note: This will fail because we use Math.random()
       // In a real implementation, we'd want deterministic noise
-      // For now, just ensure they're both valid
-      expect(buffer1).toHaveLength(64);
-      expect(buffer2).toHaveLength(64);
+      // For now, just ensure they're both valid 2D arrays
+      expect(buffer1).toHaveLength(8);
+      expect(buffer1[0]).toHaveLength(8);
+      expect(buffer2).toHaveLength(8);
+      expect(buffer2[0]).toHaveLength(8);
     });
 
     it('should handle various image sizes', () => {
       const sizes = [4, 8, 16, 32];
 
       sizes.forEach((size) => {
-        const buffer = createPerlinNoise(size, 0.1);
-        expect(buffer).toHaveLength(size * size);
+        const noiseArray = createPerlinNoise(size, 0.1);
+        expect(noiseArray).toHaveLength(size);
+        expect(noiseArray[0]).toHaveLength(size);
+      });
+    });
+  });
+
+  describe('Fractal Noise Generation', () => {
+    describe('createFractalNoise', () => {
+      it('should generate valid fractal noise array', () => {
+        const noiseArray = createFractalNoise(4, 64, 0.1);
+
+        expect(Array.isArray(noiseArray)).toBe(true);
+        expect(noiseArray).toHaveLength(64);
+        expect(noiseArray[0]).toHaveLength(64);
+        
+        // Values should be in expected range (approximately -1 to 1)
+        const flatValues = noiseArray.flat();
+        const minVal = Math.min(...flatValues);
+        const maxVal = Math.max(...flatValues);
+        expect(minVal).toBeGreaterThan(-2);
+        expect(maxVal).toBeLessThan(2);
+      });
+
+      it('should handle single octave (equivalent to Perlin noise)', () => {
+        const noiseArray = createFractalNoise(1, 32, 0.1);
+        
+        expect(noiseArray).toHaveLength(32);
+        expect(noiseArray[0]).toHaveLength(32);
+      });
+
+      it('should produce different results with different octave counts', () => {
+        const noise2Octaves = createFractalNoise(2, 32, 0.1);
+        const noise4Octaves = createFractalNoise(4, 32, 0.1);
+
+        // Different octave counts should produce different patterns
+        expect(noise2Octaves).not.toEqual(noise4Octaves);
+      });
+
+      it('should handle performance test with maximum frontend parameters', () => {
+        const startTime = performance.now();
+        
+        // Test maximum frontend settings: 1024x1024 with 6 octaves
+        const noiseArray = createFractalNoise(6, 1024, 0.05);
+        
+        const endTime = performance.now();
+        const executionTime = endTime - startTime;
+
+        // Verify the result is valid
+        expect(Array.isArray(noiseArray)).toBe(true);
+        expect(noiseArray).toHaveLength(1024);
+        expect(noiseArray[0]).toHaveLength(1024);
+
+        // Log performance for monitoring (not a strict assertion)
+        console.log(`Performance test: 1024x1024 with 6 octaves took ${executionTime.toFixed(2)}ms`);
+        
+        // Should complete within 15 seconds on most hardware
+        expect(executionTime).toBeLessThan(15000);
+      });
+
+      it('should demonstrate memory efficiency with sequential octave generation', () => {
+        // Test that we can generate multiple smaller images without memory issues
+        const startTime = performance.now();
+        
+        for (let i = 0; i < 10; i++) {
+          const noiseArray = createFractalNoise(6, 256, 0.05);
+          expect(noiseArray).toHaveLength(256);
+        }
+        
+        const endTime = performance.now();
+        console.log(`Memory efficiency test: 10x(256x256 with 6 octaves) took ${(endTime - startTime).toFixed(2)}ms`);
+        
+        // Should handle multiple generations efficiently
+        expect(endTime - startTime).toBeLessThan(6000);
       });
     });
   });
