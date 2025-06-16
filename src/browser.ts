@@ -1,4 +1,5 @@
-import { createPerlinNoise } from './perlin.js';
+import { createFractalNoise } from './fractal.js';
+import { createImageBuffer } from './image.js';
 
 // Draw placeholder on canvas
 function drawPlaceholder() {
@@ -36,6 +37,12 @@ function setupRangeInputs() {
   const scaleFactorDisplay = document.getElementById(
     'scale_factor_display'
   ) as HTMLOutputElement;
+  const octaveCountRange = document.getElementById(
+    'octave_count_range'
+  ) as HTMLInputElement;
+  const octaveCountDisplay = document.getElementById(
+    'octave_count_display'
+  ) as HTMLOutputElement;
 
   if (imageSizeRange && imageSizeDisplay) {
     imageSizeRange.addEventListener('input', () => {
@@ -49,6 +56,12 @@ function setupRangeInputs() {
   if (scaleFactorRange && scaleFactorDisplay) {
     scaleFactorRange.addEventListener('input', () => {
       scaleFactorDisplay.value = parseFloat(scaleFactorRange.value).toFixed(2);
+    });
+  }
+
+  if (octaveCountRange && octaveCountDisplay) {
+    octaveCountRange.addEventListener('input', () => {
+      octaveCountDisplay.value = octaveCountRange.value;
     });
   }
 }
@@ -92,11 +105,14 @@ function handleFormSubmit(evt: SubmitEvent) {
   const formData = new FormData(evt.target as HTMLFormElement);
   const imageSize = formData.get('image_size_range') as string;
   const scaleFactor = formData.get('scale_factor_range') as string;
+  const octaveCount = formData.get('octave_count_range') as string;
 
   const imageSizeValue = Math.pow(2, parseInt(imageSize));
   const scaleFactorValue = parseFloat(scaleFactor);
+  const octaveCountValue = parseInt(octaveCount);
 
-  const imageBuffer = createPerlinNoise(imageSizeValue, scaleFactorValue);
+  const noiseArray = createFractalNoise(octaveCountValue, imageSizeValue, scaleFactorValue);
+  const imageBuffer = createImageBuffer(imageSizeValue, noiseArray);
   renderToCanvas(imageBuffer, imageSizeValue);
 }
 
