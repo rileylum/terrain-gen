@@ -1,10 +1,13 @@
 import sharp from 'sharp';
-import { createPerlinNoise } from './perlin';
+import { createFractalNoise } from './fractal.js';
+import { createImageBuffer } from './image.js';
 
 const imageSize = 256;
-const scaleFactor = 0.1;
+const octaveCount = 4;
+const initialScaleFactor = 0.05;
 
-const imageBuffer = createPerlinNoise(imageSize, scaleFactor);
+const noiseArray = createFractalNoise(octaveCount, imageSize, initialScaleFactor);
+const imageBuffer = createImageBuffer(imageSize, noiseArray);
 
 sharp(imageBuffer, {
   raw: { width: imageSize, height: imageSize, channels: 1 },

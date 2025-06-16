@@ -14,12 +14,11 @@
   </head>
   <body>
     <header>
-      <h1>Perlin Noise</h1>
+      <h1>Fractal Terrain Generator</h1>
       <p>
         Generate natural-looking terrain patterns using
         <a href="https://en.wikipedia.org/wiki/Perlin_noise" target="_blank" rel="noopener noreferrer"
-          >Perlin noise algorithm</a
-        >. Adjust the settings below to create smooth, organic textures for maps, landscapes, and procedural content.
+          >Perlin noise</a> with octave layering. Adjust the settings below to create realistic, multi-scale terrain for maps, landscapes, and procedural content.
       </p>
     </header>
     <main>
@@ -69,6 +68,26 @@
                 aria-describedby="scale_factor_display"
               />
               <small>Controls zoom level - lower values create smoother, larger patterns</small>
+            </div>
+
+            <div class="form-group">
+              <label for="octave_count_range"
+                >Octave Count:
+                <output for="octave_count_range" name="octave_count_display" id="octave_count_display"
+                  >4</output
+                ></label
+              >
+              <input
+                type="range"
+                min="1"
+                max="6"
+                step="1"
+                value="4"
+                name="octave_count_range"
+                id="octave_count_range"
+                aria-describedby="octave_count_display"
+              />
+              <small>Number of noise layers - more octaves add finer detail</small>
             </div>
 
             <button type="submit">Generate Image</button>

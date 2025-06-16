@@ -1,23 +1,33 @@
 # Terrain Generator for D&D
 
-A TypeScript implementation of Perlin noise for procedural terrain generation with an interactive web interface. Generate natural-looking terrain patterns for D&D campaigns and learn noise generation algorithms.
+A TypeScript implementation of Perlin noise and fractal noise for procedural terrain generation with an interactive web interface. Generate natural-looking terrain patterns for D&D campaigns and learn noise generation algorithms.
 
-![Example Output](example-output.png)
+| Single-Octave Perlin Noise | Multi-Octave Fractal Noise |
+|:---------------------------:|:---------------------------:|
+| ![Perlin Noise](example-perlin.png) | ![Fractal Noise](example-fractal.png) |
+| Uniform pattern at single scale | Natural terrain with multiple detail levels |
 
 ## Overview
 
-This project implements Perlin noise from scratch to generate realistic terrain patterns. Perlin noise works by:
+This project implements both **Perlin noise** and **fractal noise** from scratch to generate realistic terrain patterns:
 
+### Perlin Noise Algorithm
 1. **Creating a grid of random gradient vectors** - Each grid point has a random direction vector
 2. **Calculating dot products** - For any sample point, compute how aligned it is with surrounding gradients  
 3. **Interpolating values** - Smoothly blend the dot products to create continuous, natural-looking noise
 
-The result is organic, flowing patterns perfect for terrain generation rather than harsh random noise.
+### Fractal Noise (Octave Layering)
+1. **Generate multiple octaves** - Create several Perlin noise layers at different frequencies
+2. **Apply decreasing amplitudes** - Each octave contributes less to the final result (typically halving each time)
+3. **Combine and normalize** - Sum all octaves together for natural, multi-scale terrain patterns
+
+The result is organic, flowing patterns with detail at multiple scales - perfect for realistic terrain generation rather than uniform noise.
 
 ## Features
 
 - ✅ **Interactive Web Interface** - Real-time terrain generation in browser
-- ✅ **Pure TypeScript Perlin noise implementation** - Built from scratch for learning
+- ✅ **Pure TypeScript noise implementation** - Perlin noise and fractal noise built from scratch
+- ✅ **Octave Layering** - Multi-scale fractal noise for realistic terrain
 - ✅ **Canvas Rendering** - Real-time visualization with dynamic sizing
 - ✅ **Command Line Tool** - PNG export for offline use
 
@@ -104,13 +114,22 @@ For integration into other projects:
 
 ```typescript
 import { createPerlinNoise } from './perlin';
+import { createFractalNoise } from './fractal';
+import { createImageBuffer } from './image';
 
+// Single-octave Perlin noise
 const imageSize = 256;
-const scaleFactor = 0.1; // Controls noise frequency
-const imageBuffer = createPerlinNoise(imageSize, scaleFactor);
+const scaleFactor = 0.1;
+const perlinNoise = createPerlinNoise(imageSize, scaleFactor);
 
+// Multi-octave fractal noise (recommended for terrain)
+const octaveCount = 4;
+const initialScale = 0.05;
+const fractalNoise = createFractalNoise(octaveCount, imageSize, initialScale);
+
+// Convert to image buffer
+const imageBuffer = createImageBuffer(imageSize, fractalNoise);
 // imageBuffer is a Uint8Array with grayscale values (0-255)
-// Can be used with Canvas API, image libraries, or file output
 ```
 
 ### Parameter Guide
@@ -128,9 +147,14 @@ const imageBuffer = createPerlinNoise(imageSize, scaleFactor);
 
 ### Key Functions
 
-- `createPerlinNoise(size, scale)`: Main function to generate noise
+**Noise Generation:**
+- `createPerlinNoise(size, scale)`: Generate single-octave Perlin noise
+- `createFractalNoise(octaves, size, scale)`: Generate multi-octave fractal noise
 - `sampleNoise(coordinate, vectorGrid)`: Sample noise at specific coordinates
 - `createVectorGrid(gridSize)`: Generate the gradient vector grid
+
+**Image Processing:**
+- `createImageBuffer(size, noiseArray)`: Convert noise array to image buffer
 - `noiseToPixel(noiseValue)`: Convert noise values [-1,1] to pixel values [0,255]
 
 ## Project Structure
@@ -141,11 +165,14 @@ terrain-gen/
 │   ├── index.ts              # CLI tool for PNG generation
 │   ├── browser.ts            # Web interface functionality
 │   ├── perlin.ts            # Core Perlin noise implementation
+│   ├── fractal.ts           # Fractal noise with octave layering
+│   ├── image.ts             # Image buffer conversion utilities
 │   ├── types.ts             # TypeScript type definitions
 │   └── __tests__/           # Test suite
 │       ├── browser.test.ts  # Browser functionality tests
 │       ├── index.test.ts    # CLI tool tests
-│       └── perlin.test.ts   # Core algorithm tests
+│       ├── noise.test.ts    # Noise generation tests (Perlin + Fractal)
+│       └── image.test.ts    # Image processing tests
 ├── public/
 │   ├── index.html           # Web interface HTML
 │   └── style.css            # Responsive styling
@@ -162,10 +189,8 @@ terrain-gen/
 - [x] **Web Frontend** - Browser-based terrain generator
 - [x] **Parameter Controls** - Sliders and inputs for all generation settings
 
-### Phase 2: Enhanced Noise Generation
-- [ ] **Octave Layering** - Combine multiple noise layers for realistic terrain
-- [ ] **Fractal Noise** - Add detail at multiple scales
-- [ ] **Noise Variants** - Implement Simplex noise and other algorithms
+### Phase 2: Enhanced Noise Generation ✅ **COMPLETED** 
+- [x] **Fractal Noise (Octave Layering)** - Combine multiple noise layers for realistic terrain
 
 ### Phase 3: Terrain Features
 - [ ] **Height Thresholding** - Convert noise to terrain types (water, plains, hills, mountains)
@@ -179,13 +204,19 @@ terrain-gen/
 - [ ] **Encounter Zones** - Generate encounter difficulty based on terrain
 - [ ] **Resource Distribution** - Place natural resources and points of interest
 
-### Phase 5: Visualization & Export
+### Phase 5: Advanced Noise Generation
+- [ ] **Noise Algorithm Variants** - Implement Simplex noise and other algorithms
+- [ ] **Fractal Noise Variants** - Turbulence, ridged noise, and domain warping
+- [ ] **Erosion Simulation** - Hydraulic and thermal erosion for realistic terrain
+- [ ] **Noise Combination** - Layer different noise types for complex patterns
+
+### Phase 6: Visualization & Export
 - [ ] **Color Mapping** - Realistic terrain colors and elevation shading
 - [ ] **Contour Lines** - Topographic map generation
 - [ ] **Multiple Export Formats** - SVG, GeoJSON, Roll20 integration
 - [ ] **Interactive Preview** - Real-time parameter adjustment
 
-### Phase 6: Extending User Interface
+### Phase 7: Extending User Interface
 - [ ] **Preset Templates** - Common terrain types and D&D scenarios
 - [ ] **Batch Generation** - Generate multiple map variations
 

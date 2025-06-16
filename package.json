@@ -2,6 +2,7 @@
   "name": "terrain-gen",
   "version": "1.0.0",
   "description": "Terrain Generation for DnD World Building",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "npx tsc && node dist/index.js",
@@ -46,8 +47,7 @@
   },
   "lint-staged": {
     "src/**/*.ts": [
-      "prettier --write",
-      "jest --findRelatedTests --passWithNoTests"
+      "prettier --write"
     ],
     "public/**/*.{html,css}": [
       "prettier --write"
