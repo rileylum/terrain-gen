@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "npx tsc && node dist/index.js",
-    "dev": "node dev-server.js",
+    "dev": "npx tsc && node dev-server.js",
+    "build": "npx tsc --outDir build && cp -r public/* build/",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build --dotfiles",
     "format": "prettier --write \"src/**/*.ts\" \"public/**/*.{html,css}\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"public/**/*.{html,css}\"",
     "test": "jest",
@@ -34,7 +37,8 @@
     "lint-staged": "^16.1.0",
     "prettier": "^3.5.3",
     "ts-jest": "^29.4.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "gh-pages": "^5.3.0"
   },
   "dependencies": {
     "@types/sharp": "^0.31.1",
