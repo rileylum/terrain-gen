@@ -25,8 +25,11 @@ describe('Index Module', () => {
     mockSharp.mockReturnValue({ png: mockPng } as any);
 
     // Mock createPerlinNoise to return a sample noise array
-    mockCreatePerlinNoise.mockReturnValue([[0, 0.5], [-0.5, 1]]);
-    
+    mockCreatePerlinNoise.mockReturnValue([
+      [0, 0.5],
+      [-0.5, 1],
+    ]);
+
     // Mock createImageBuffer to return a sample buffer
     mockCreateImageBuffer.mockReturnValue(new Uint8Array([0, 127, 255, 64]));
   });
@@ -40,7 +43,7 @@ describe('Index Module', () => {
 
     // Verify sharp was called with correct parameters
     expect(mockSharp).toHaveBeenCalledWith(expect.any(Uint8Array), {
-      raw: { width: 256, height: 256, channels: 1 },
+      raw: { width: 256, height: 256, channels: 4 },
     });
   });
 });
