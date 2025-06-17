@@ -25,7 +25,10 @@ describe('Index Module', () => {
         const mockPng = jest.fn().mockReturnValue({ toFile: mockToFile });
         mockSharp.mockReturnValue({ png: mockPng });
         // Mock createPerlinNoise to return a sample noise array
-        mockCreatePerlinNoise.mockReturnValue([[0, 0.5], [-0.5, 1]]);
+        mockCreatePerlinNoise.mockReturnValue([
+            [0, 0.5],
+            [-0.5, 1],
+        ]);
         // Mock createImageBuffer to return a sample buffer
         mockCreateImageBuffer.mockReturnValue(new Uint8Array([0, 127, 255, 64]));
     });
@@ -36,7 +39,7 @@ describe('Index Module', () => {
         expect(mockCreatePerlinNoise).toHaveBeenCalledWith(256, 0.1);
         // Verify sharp was called with correct parameters
         expect(mockSharp).toHaveBeenCalledWith(expect.any(Uint8Array), {
-            raw: { width: 256, height: 256, channels: 1 },
+            raw: { width: 256, height: 256, channels: 4 },
         });
     }));
 });

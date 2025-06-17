@@ -1,5 +1,5 @@
 import { createFractalNoise } from './fractal.js';
-import { createImageBuffer } from './image.js';
+import { createImageBuffer, TERRAIN_CONFIG } from './image.js';
 // Draw placeholder on canvas
 function drawPlaceholder() {
     const canvas = document.getElementById('terrain-canvas');
@@ -18,6 +18,303 @@ function drawPlaceholder() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Placeholder until image is generated', width / 2, height / 2);
+}
+// Terrain configuration management
+let currentTerrainConfig = Object.assign({}, TERRAIN_CONFIG);
+let terrainCounter = 0;
+function updateTerrainRanges() {
+    // Sort terrain types by max elevation
+    const sortedTerrain = Object.entries(currentTerrainConfig).sort((a, b) => a[1].maxElevation - b[1].maxElevation);
+    // Update min elevations based on previous terrain's max elevation
+    for (let i = 0; i < sortedTerrain.length; i++) {
+        const [terrainKey, terrain] = sortedTerrain[i];
+        if (i === 0) {
+            // First terrain starts at -1.0
+            currentTerrainConfig[terrainKey].minElevation = -1.0;
+        }
+        else {
+            // Each terrain starts where the previous one ended
+            const previousMax = sortedTerrain[i - 1][1].maxElevation;
+            currentTerrainConfig[terrainKey].minElevation = previousMax;
+        }
+    }
+    // Update UI to match sorted order
+    sortTerrainUIElements();
+    // Validate terrain configuration
+    validateTerrainConfig();
+}
+function validateTerrainConfig() {
+    const generateBtn = document.querySelector('.generate-btn');
+    // Check for duplicate max elevations
+    const maxElevations = Object.values(currentTerrainConfig).map((t) => t.maxElevation);
+    const duplicates = maxElevations.filter((value, index) => maxElevations.indexOf(value) !== index);
+    if (duplicates.length > 0) {
+        // Disable generate button
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Fix Terrain Configuration';
+        }
+        // Highlight problematic inputs with tooltip
+        highlightDuplicateElevations(duplicates[0]);
+    }
+    else {
+        // Enable generate button
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate Terrain';
+        }
+        // Remove highlights
+        clearElevationHighlights();
+    }
+}
+function highlightDuplicateElevations(duplicateValue) {
+    const terrainElements = document.querySelectorAll('.terrain-type');
+    terrainElements.forEach((element) => {
+        var _a;
+        const terrainKey = element.dataset.terrainName;
+        const maxElevation = (_a = currentTerrainConfig[terrainKey]) === null || _a === void 0 ? void 0 : _a.maxElevation;
+        const maxInput = element.querySelector('.max-elevation');
+        if (maxElevation === duplicateValue && maxInput) {
+            maxInput.classList.add('error');
+            maxInput.title = `⚠️ Duplicate elevation value (${duplicateValue.toFixed(2)}). Please adjust to create unique terrain ranges.`;
+        }
+        else if (maxInput) {
+            maxInput.classList.remove('error');
+            maxInput.title = '';
+        }
+    });
+}
+function clearElevationHighlights() {
+    const elevationInputs = document.querySelectorAll('.max-elevation');
+    elevationInputs.forEach((input) => {
+        input.classList.remove('error');
+        input.title = '';
+    });
+}
+function sortTerrainUIElements() {
+    const container = document.getElementById('terrain-types-container');
+    if (!container)
+        return;
+    // Get all terrain elements with their max elevation values
+    const terrainElements = Array.from(container.children);
+    // Sort elements by their terrain's max elevation
+    terrainElements.sort((a, b) => {
+        var _a, _b;
+        const aKey = a.dataset.terrainName;
+        const bKey = b.dataset.terrainName;
+        const aMaxElevation = ((_a = currentTerrainConfig[aKey]) === null || _a === void 0 ? void 0 : _a.maxElevation) || 0;
+        const bMaxElevation = ((_b = currentTerrainConfig[bKey]) === null || _b === void 0 ? void 0 : _b.maxElevation) || 0;
+        return aMaxElevation - bMaxElevation;
+    });
+    // Re-append elements in sorted order and update range indicators
+    terrainElements.forEach((element, index) => {
+        container.appendChild(element);
+        updateElevationRangeIndicators(element, index, terrainElements.length);
+    });
+}
+// Estimate coverage percentage based on normal distribution of Perlin noise
+function estimateNoiseDistribution(minValue, maxValue) {
+    // Perlin noise roughly follows a normal distribution centered at 0
+    // with most values concentrated between -0.5 and 0.5
+    // Approximate cumulative distribution function for Perlin noise
+    function normalCDF(x) {
+        // Simplified approximation of normal CDF for Perlin noise distribution
+        // Based on observed data: most values fall within [-0.5, 0.5]
+        const mean = 0;
+        const stdDev = 0.25; // Approximated from actual noise distribution
+        // Clamp extreme values
+        if (x <= -1)
+            return 0;
+        if (x >= 1)
+            return 1;
+        // Simple sigmoid approximation for the CDF
+        const z = (x - mean) / stdDev;
+        return 1 / (1 + Math.exp(-z * 1.2));
+    }
+    const minCDF = normalCDF(minValue);
+    const maxCDF = normalCDF(maxValue);
+    return (maxCDF - minCDF) * 100;
+}
+function updateElevationRangeIndicators(element, index, totalCount) {
+    const terrainKey = element.dataset.terrainName;
+    const terrain = currentTerrainConfig[terrainKey];
+    if (!terrain)
+        return;
+    const elevationGroup = element.querySelector('.elevation-group');
+    if (!elevationGroup)
+        return;
+    // Remove existing range indicator
+    const existingIndicator = elevationGroup.querySelector('.elevation-range-indicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    // Calculate range and estimated coverage percentage
+    let minValue, maxValue;
+    if (index === 0) {
+        minValue = -1.0;
+        maxValue = terrain.maxElevation;
+    }
+    else if (index === totalCount - 1) {
+        minValue = terrain.minElevation;
+        maxValue = 1.0;
+    }
+    else {
+        minValue = terrain.minElevation;
+        maxValue = terrain.maxElevation;
+    }
+    const estimatedCoverage = estimateNoiseDistribution(minValue, maxValue);
+    // Create range indicator
+    const indicator = document.createElement('small');
+    indicator.className = 'elevation-range-indicator';
+    if (index === 0) {
+        indicator.textContent = `Range: -1.0 to ${maxValue.toFixed(2)} (~${estimatedCoverage.toFixed(1)}%)`;
+    }
+    else if (index === totalCount - 1) {
+        indicator.textContent = `Range: ${minValue.toFixed(2)} to 1.0 (~${estimatedCoverage.toFixed(1)}%)`;
+    }
+    else {
+        indicator.textContent = `Range: ${minValue.toFixed(2)} to ${maxValue.toFixed(2)} (~${estimatedCoverage.toFixed(1)}%)`;
+    }
+    elevationGroup.appendChild(indicator);
+}
+function rgbToHex(r, g, b) {
+    return ('#' +
+        [r, g, b]
+            .map((x) => {
+            const hex = x.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        })
+            .join(''));
+}
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+        }
+        : { r: 0, g: 0, b: 0 };
+}
+function createTerrainEditor(name, terrainKey, minElevation, maxElevation, color) {
+    const terrainId = `terrain_${terrainCounter++}`;
+    const colorHex = rgbToHex(color.R, color.G, color.B);
+    const div = document.createElement('div');
+    div.className = 'terrain-type';
+    div.dataset.terrainName = terrainKey;
+    div.innerHTML = `
+    <div class="terrain-details">
+      <div class="terrain-name-group">
+        <label>Terrain Name:</label>
+        <div class="name-input-group">
+          <input type="text" class="terrain-name" value="${name}" />
+          <button type="button" class="remove-btn">×</button>
+        </div>
+      </div>
+      <div class="color-group">
+        <label>Color:</label>
+        <div class="color-input-group">
+          <input type="color" class="terrain-color" value="${colorHex}" />
+          <input type="text" class="terrain-hex" value="${colorHex}" />
+        </div>
+      </div>
+      <div class="elevation-group">
+        <label>Max Elevation:</label>
+        <div class="elevation-inputs">
+          <input type="number" class="max-elevation" value="${maxElevation}" step="0.01" min="-1" max="1" />
+        </div>
+      </div>
+    </div>
+  `;
+    // Event listeners
+    const removeBtn = div.querySelector('.remove-btn');
+    const nameInput = div.querySelector('.terrain-name');
+    const colorInput = div.querySelector('.terrain-color');
+    const hexInput = div.querySelector('.terrain-hex');
+    const maxInput = div.querySelector('.max-elevation');
+    removeBtn.addEventListener('click', () => {
+        delete currentTerrainConfig[div.dataset.terrainName];
+        div.remove();
+        updateTerrainRanges();
+    });
+    nameInput.addEventListener('input', () => {
+        const oldName = div.dataset.terrainName;
+        const newName = nameInput.value.toUpperCase().replace(/\s+/g, '_');
+        if (oldName !== newName && newName) {
+            currentTerrainConfig[newName] = currentTerrainConfig[oldName];
+            delete currentTerrainConfig[oldName];
+            div.dataset.terrainName = newName;
+        }
+    });
+    colorInput.addEventListener('input', () => {
+        hexInput.value = colorInput.value;
+        updateTerrainColor();
+    });
+    hexInput.addEventListener('input', () => {
+        colorInput.value = hexInput.value;
+        updateTerrainColor();
+    });
+    function updateTerrainColor() {
+        const rgb = hexToRgb(colorInput.value);
+        const terrainName = div.dataset.terrainName;
+        if (currentTerrainConfig[terrainName]) {
+            currentTerrainConfig[terrainName].color = {
+                R: rgb.r,
+                G: rgb.g,
+                B: rgb.b,
+                A: 255,
+            };
+        }
+    }
+    function updateElevation() {
+        const terrainName = div.dataset.terrainName;
+        if (currentTerrainConfig[terrainName]) {
+            currentTerrainConfig[terrainName].maxElevation = parseFloat(maxInput.value);
+            updateTerrainRanges();
+        }
+    }
+    maxInput.addEventListener('input', updateElevation);
+    return div;
+}
+function setupTerrainEditor() {
+    const container = document.getElementById('terrain-types-container');
+    const addBtn = document.getElementById('add-terrain-btn');
+    const resetBtn = document.getElementById('reset-terrain-btn');
+    if (!container || !addBtn || !resetBtn) {
+        console.warn('Terrain editor elements not found, skipping setup');
+        return;
+    }
+    // Initialize with default terrain types
+    function loadDefaultTerrain() {
+        container.innerHTML = '';
+        currentTerrainConfig = Object.assign({}, TERRAIN_CONFIG);
+        terrainCounter = 0;
+        Object.entries(TERRAIN_CONFIG).forEach(([terrainKey, config]) => {
+            const displayName = terrainKey.toLowerCase().replace(/_/g, ' ');
+            const editor = createTerrainEditor(displayName, terrainKey, config.minElevation, config.maxElevation, config.color);
+            container.appendChild(editor);
+        });
+    }
+    addBtn.addEventListener('click', () => {
+        const newName = `New Terrain ${terrainCounter}`;
+        const terrainKey = newName.toUpperCase().replace(/\s+/g, '_');
+        currentTerrainConfig[terrainKey] = {
+            minElevation: 0,
+            maxElevation: 0.1,
+            color: { R: 128, G: 128, B: 128, A: 255 },
+        };
+        const editor = createTerrainEditor(newName, terrainKey, 0, 0.1, {
+            R: 128,
+            G: 128,
+            B: 128,
+            A: 255,
+        });
+        container.appendChild(editor);
+        updateTerrainRanges();
+    });
+    resetBtn.addEventListener('click', loadDefaultTerrain);
+    loadDefaultTerrain();
+    updateTerrainRanges();
 }
 // Update output displays when range inputs change
 function setupRangeInputs() {
@@ -42,11 +339,33 @@ function setupRangeInputs() {
             octaveCountDisplay.value = octaveCountRange.value;
         });
     }
+    // Terrain editor is now handled separately
+}
+// Setup tab functionality
+function setupTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            // Remove active class from all buttons and panels
+            tabButtons.forEach((btn) => btn.classList.remove('active'));
+            tabPanels.forEach((panel) => panel.classList.remove('active'));
+            // Add active class to clicked button and corresponding panel
+            button.classList.add('active');
+            const targetPanel = document.getElementById(targetTab);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
 }
 // Browser-specific terrain generation logic
 export function initializeTerrainGenerator() {
     drawPlaceholder();
     setupRangeInputs();
+    setupTabs();
+    setupTerrainEditor();
 }
 // Render image buffer to canvas
 function renderToCanvas(imageBuffer, imageSize) {
@@ -61,14 +380,8 @@ function renderToCanvas(imageBuffer, imageSize) {
     canvas.height = imageSize;
     // Create ImageData
     const imageData = ctx.createImageData(imageSize, imageSize);
-    // Convert grayscale to RGBA
-    for (let i = 0; i < imageBuffer.length; i++) {
-        const pixelIndex = i * 4;
-        imageData.data[pixelIndex] = imageBuffer[i]; // R
-        imageData.data[pixelIndex + 1] = imageBuffer[i]; // G
-        imageData.data[pixelIndex + 2] = imageBuffer[i]; // B
-        imageData.data[pixelIndex + 3] = 255; // A
-    }
+    // Copy RGBA data directly from buffer
+    imageData.data.set(imageBuffer);
     ctx.putImageData(imageData, 0, 0);
 }
 // Add your form handling and canvas drawing logic
@@ -82,7 +395,7 @@ function handleFormSubmit(evt) {
     const scaleFactorValue = parseFloat(scaleFactor);
     const octaveCountValue = parseInt(octaveCount);
     const noiseArray = createFractalNoise(octaveCountValue, imageSizeValue, scaleFactorValue);
-    const imageBuffer = createImageBuffer(imageSizeValue, noiseArray);
+    const imageBuffer = createImageBuffer(imageSizeValue, noiseArray, currentTerrainConfig);
     renderToCanvas(imageBuffer, imageSizeValue);
 }
 // Initialize when DOM is ready
