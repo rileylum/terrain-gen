@@ -33,21 +33,25 @@ describe('Image Generation', () => {
 
       const buffer: ImageBuffer = createImageBuffer(imageSize, noiseArray);
       expect(buffer).toBeInstanceOf(Uint8Array);
-      expect(buffer.length).toBe(16);
+      expect(buffer.length).toBe(64); // 4x4 pixels * 4 bytes per pixel (RGBA)
     });
 
-    it('should convert noise values to pixels correctly', () => {
+    it('should convert noise values to terrain colors correctly', () => {
       const imageSize: ImageSize = 2;
       const noiseArray: NoiseArray = [
-        [-1, 1],
-        [0, 0.5],
+        [-0.5, 0.2], // Deep water, Mountain
+        [0.05, 0.2], // Shallow water, Mountain
       ];
 
       const buffer: ImageBuffer = createImageBuffer(imageSize, noiseArray);
-      expect(buffer[0]).toBe(0); // noiseToPixel(-1)
-      expect(buffer[1]).toBe(255); // noiseToPixel(1)
-      expect(buffer[2]).toBe(127); // noiseToPixel(0)
-      expect(buffer[3]).toBe(191); // noiseToPixel(0.5)
+      expect(buffer).toBeInstanceOf(Uint8Array);
+      expect(buffer.length).toBe(16); // 2x2 pixels * 4 bytes per pixel (RGBA)
+
+      // First pixel should be deep water (blue)
+      expect(buffer[0]).toBe(30); // R
+      expect(buffer[1]).toBe(58); // G
+      expect(buffer[2]).toBe(138); // B
+      expect(buffer[3]).toBe(255); // A
     });
   });
 });

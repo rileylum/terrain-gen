@@ -2,10 +2,10 @@
 
 A TypeScript implementation of Perlin noise and fractal noise for procedural terrain generation with an interactive web interface. Generate natural-looking terrain patterns for D&D campaigns and learn noise generation algorithms.
 
-| Single-Octave Perlin Noise | Multi-Octave Fractal Noise |
-|:---------------------------:|:---------------------------:|
-| ![Perlin Noise](example-perlin.png) | ![Fractal Noise](example-fractal.png) |
-| Uniform pattern at single scale | Natural terrain with multiple detail levels |
+| Single-Octave Perlin Noise | Multi-Octave Fractal Noise | Colored Terrain Generation |
+|:---------------------------:|:---------------------------:|:---------------------------:|
+| ![Perlin Noise](example-perlin.png) | ![Fractal Noise](example-fractal.png) | ![Terrain](example-terrain.png) |
+| Uniform pattern at single scale | Natural terrain with multiple detail levels | Colored terrain with elevation-based biomes |
 
 ## Overview
 
@@ -28,6 +28,8 @@ The result is organic, flowing patterns with detail at multiple scales - perfect
 - ✅ **Interactive Web Interface** - Real-time terrain generation in browser
 - ✅ **Pure TypeScript noise implementation** - Perlin noise and fractal noise built from scratch
 - ✅ **Octave Layering** - Multi-scale fractal noise for realistic terrain
+- ✅ **Colored Terrain Generation** - Elevation-based terrain types with customizable colors
+- ✅ **Interactive Terrain Editor** - Visual editor for terrain types, colors, and elevation ranges
 - ✅ **Canvas Rendering** - Real-time visualization with dynamic sizing
 - ✅ **Command Line Tool** - PNG export for offline use
 
@@ -100,13 +102,19 @@ The easiest way to generate terrain is through the web interface:
 
 1. **Start the server**: `npm run dev`
 2. **Open your browser**: Navigate to `http://localhost:8000`
-3. **Adjust parameters**:
+3. **Configure Image Settings**:
    - **Image Size**: Use the slider to select resolution (64px to 1024px)
    - **Scale Factor**: Control noise frequency (0.01 to 0.3)
    - Lower scale = smoother, larger patterns
    - Higher scale = more detailed, smaller features
-4. **Generate**: Click "Generate Image" to create new terrain
-5. **Real-time preview**: Watch the canvas update instantly
+   - **Octave Count**: Adjust fractal noise complexity (1-6 layers)
+4. **Customize Terrain Types** (Terrain Settings tab):
+   - **Edit terrain colors**: Click color pickers to customize terrain appearance
+   - **Adjust elevation ranges**: Modify where each terrain type appears
+   - **Add/remove terrains**: Create custom terrain types
+   - **View coverage estimates**: See percentage distribution of terrain types
+5. **Generate**: Click "Generate Terrain" to create new terrain
+6. **Real-time preview**: Watch the canvas update instantly with colored terrain
 
 ### Programmatic Usage
 
@@ -115,7 +123,7 @@ For integration into other projects:
 ```typescript
 import { createPerlinNoise } from './perlin';
 import { createFractalNoise } from './fractal';
-import { createImageBuffer } from './image';
+import { createImageBuffer, TERRAIN_CONFIG } from './image';
 
 // Single-octave Perlin noise
 const imageSize = 256;
@@ -127,9 +135,16 @@ const octaveCount = 4;
 const initialScale = 0.05;
 const fractalNoise = createFractalNoise(octaveCount, imageSize, initialScale);
 
-// Convert to image buffer
+// Convert to colored terrain image buffer
 const imageBuffer = createImageBuffer(imageSize, fractalNoise);
-// imageBuffer is a Uint8Array with grayscale values (0-255)
+// imageBuffer is a Uint8Array with RGBA values (4 bytes per pixel)
+
+// Use custom terrain configuration
+const customTerrain = {
+  WATER: { minElevation: -1.0, maxElevation: 0.2, color: { R: 0, G: 100, B: 200, A: 255 } },
+  LAND: { minElevation: 0.2, maxElevation: 1.0, color: { R: 100, G: 150, B: 50, A: 255 } }
+};
+const customImageBuffer = createImageBuffer(imageSize, fractalNoise, customTerrain);
 ```
 
 ### Parameter Guide
@@ -153,8 +168,9 @@ const imageBuffer = createImageBuffer(imageSize, fractalNoise);
 - `sampleNoise(coordinate, vectorGrid)`: Sample noise at specific coordinates
 - `createVectorGrid(gridSize)`: Generate the gradient vector grid
 
-**Image Processing:**
-- `createImageBuffer(size, noiseArray)`: Convert noise array to image buffer
+**Terrain Processing:**
+- `createImageBuffer(size, noiseArray, terrainConfig?)`: Convert noise array to colored terrain image buffer
+- `getTerrain(elevation, terrainConfig?)`: Get terrain color for specific elevation
 - `noiseToPixel(noiseValue)`: Convert noise values [-1,1] to pixel values [0,255]
 
 ## Project Structure
@@ -166,13 +182,14 @@ terrain-gen/
 │   ├── browser.ts            # Web interface functionality
 │   ├── perlin.ts            # Core Perlin noise implementation
 │   ├── fractal.ts           # Fractal noise with octave layering
-│   ├── image.ts             # Image buffer conversion utilities
+│   ├── image.ts             # Image buffer conversion utilities and terrain config
 │   ├── types.ts             # TypeScript type definitions
 │   └── __tests__/           # Test suite
 │       ├── browser.test.ts  # Browser functionality tests
 │       ├── index.test.ts    # CLI tool tests
 │       ├── noise.test.ts    # Noise generation tests (Perlin + Fractal)
-│       └── image.test.ts    # Image processing tests
+│       ├── image.test.ts    # Image processing tests
+│       └── terrain.test.ts  # Terrain functionality tests
 ├── public/
 │   ├── index.html           # Web interface HTML
 │   └── style.css            # Responsive styling
@@ -192,8 +209,10 @@ terrain-gen/
 ### Phase 2: Enhanced Noise Generation ✅ **COMPLETED** 
 - [x] **Fractal Noise (Octave Layering)** - Combine multiple noise layers for realistic terrain
 
-### Phase 3: Terrain Features
-- [ ] **Height Thresholding** - Convert noise to terrain types (water, plains, hills, mountains)
+### Phase 3: Terrain Features ✅ **COMPLETED**
+- [x] **Height Thresholding** - Convert noise to terrain types (water, plains, hills, mountains)
+- [x] **Colored Terrain Generation** - Elevation-based terrain coloring with customizable types
+- [x] **Interactive Terrain Editor** - Visual editor for terrain configuration
 - [ ] **Biome Generation** - Use temperature/moisture maps for biome placement
 - [ ] **River Generation** - Hydraulic erosion and water flow simulation
 - [ ] **Settlement Placement** - Algorithmic city and town positioning
