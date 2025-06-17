@@ -6,11 +6,16 @@ const imageSize = 256;
 const octaveCount = 4;
 const initialScaleFactor = 0.05;
 
-const noiseArray = createFractalNoise(octaveCount, imageSize, initialScaleFactor);
-const imageBuffer = createImageBuffer(imageSize, noiseArray);
+const noiseArray = createFractalNoise(
+  octaveCount,
+  imageSize,
+  initialScaleFactor
+);
 
-sharp(imageBuffer, {
-  raw: { width: imageSize, height: imageSize, channels: 1 },
+const coloredImageBuffer = createImageBuffer(imageSize, noiseArray);
+
+sharp(coloredImageBuffer, {
+  raw: { width: imageSize, height: imageSize, channels: 4 },
 })
   .png()
   .toFile('dist/noise.png');
